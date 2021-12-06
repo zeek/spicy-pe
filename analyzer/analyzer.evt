@@ -27,3 +27,6 @@ on PE::ExportDirectoryTable ->
 
 on PE::ImportDirectoryTable ->
     event pe_import_table($file, Zeek_PE::makeImportTable(self));
+
+on PE::ImageFile ->
+    event pe_section_bytes_counts($file, self.sectionCounts, self.sectionLengths);

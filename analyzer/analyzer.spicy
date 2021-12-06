@@ -70,7 +70,7 @@ public type ImageFile = unit {
                                    $$.numberOfSections <= MaxSections);
     optHeader:      OptionalHeader; # Required for image files
     sectionHeaders: SectionHeader[self.peHeader.numberOfSections];
-    :               bytes &size=self.headerPadSize + self.sectionDataSize
+    sectionData:    bytes &size=self.headerPadSize + self.sectionDataSize
                         if ( self.fileSize <= MaxFileSize );
 
     exportTable:    ExportDirectoryTable(self)
@@ -126,6 +126,55 @@ public type ImageFile = unit {
             }
         }
 
+    on sectionData
+        {
+            # Initialize the map that will hold the counts
+            self.sectionCounts =  map<string, map<uint8, uint64>>();
+            self.sectionLengths =  map<string, real>();
+
+            local off = DOS_HeaderSize + self.dosStubSize + PE_HeaderSize +
+                    (self.peFileFormat == PE32 ? OptionalHeaderSize32
+                                               : OptionalHeaderSize64) +
+                    self.optHeader.numberOfRvaAndSizes * DataDirectorySize +
+                    self.peHeader.numberOfSections * SectionHeaderSize;
+
+            for ( sh in self.sectionHeaders )
+            {
+              local section_name = sh.name.strip(spicy::Side::Right, b"\x00").decode();
+
+              if ( sh.pointerToRawData != 0 )
+                {
+                # Get the correct raw bytes of this section by calculating the location
+                # of the bytes relative to the current offset
+                local relativeStart: uint64 = sh.pointerToRawData - off;
+
+                local nBytesToProcess: uint32 = 0;
+
+                # Cut off after 5MiB, since by then you probably have a good idea of whether the section
+                # has high or low entropy. This is done to increase performance. In the case of a large section,
+                # are then calculating the entropy of the first 5MiB of that section.
+                if ( sh.sizeOfRawData > 5242880 ) {
+                    nBytesToProcess = 5242880;
+                } else {
+                    nBytesToProcess = sh.sizeOfRawData;
+                }
+
+                local sectionBytes: bytes = $$.sub(relativeStart, relativeStart + nBytesToProcess);
+                local sectionCount: map<uint8, uint64> = calculateCounts(sectionBytes);
+                self.sectionCounts[section_name] = sectionCount;
+                self.sectionLengths[section_name] = cast<real>(|sectionBytes|);
+                }
+
+                # If the section maps to 0x00 it does not contain any raw data,
+                # return an empty map in that case.
+                else
+                {
+                self.sectionCounts[section_name] = map<uint8, uint64>();
+                self.sectionLengths[section_name] = 0.0;
+                }
+            }
+        }
+
     var peStart: iterator<stream>;
     var peFileFormat: uint16;
     var dosStubSize: uint64;
@@ -134,6 +183,8 @@ public type ImageFile = unit {
     var sectionDataSize: uint64;
     var exportDirInfo: DirInfo;
     var importDirInfo: DirInfo;
+    var sectionCounts: map<string, map<uint8, uint64>>;
+    var sectionLengths: map<string, real>;
 };
 
 type DOS_Header = unit {
@@ -364,6 +415,22 @@ function isNull(e: ImportDirectoryTableEntry): bool
     return e.importLookupTableRVA == 0 && e.timeDateStamp == 0 &&
            e.forwarderChain == 0 && e.dllNameRVA == 0 &&
            e.importAddressTableRVA == 0;
+    }
+
+# Simple function to count the amount of times a byte occurs in a byte stream
+function calculateCounts(bts: bytes): map<uint8, uint64>
+    {
+        local counts: map<uint8, uint64>;
+
+        for ( b in bts ) {
+            if ( b in counts ) {
+                counts[b] = counts[b] + 1;
+            }
+            else {
+                counts[b] = 1;
+            }
+        }
+        return counts;
     }
 
 type ImportLookupTable = unit(f: ImageFile) {
