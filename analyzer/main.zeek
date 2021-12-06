@@ -9,7 +9,7 @@ export {
 	type SectionInfo: record{
 		entropy: double &optional &default=0.0;
 		flags: string &optional &default="";
-	}; 
+	};
 
     redef record PE::Info += {
 		section_info_table: table[string] of SectionInfo &default=table();
@@ -107,7 +107,7 @@ event pe_section_header(f: fa_file, h: PE::SectionHeader) &priority=1
 	if ( ! pe_log_section_flags ) {
 		return;
 	}
-	
+
     # The string that holds the one-character flags, "r", "w" and "e"
     local flag_string: string = "";
 
