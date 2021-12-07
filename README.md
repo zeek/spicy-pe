@@ -2,7 +2,7 @@ PE analyzer
 ===========
 
 This repository contains a
-[Spicy](2e5a18534493c384066f4cf4e6cedb6e7b7a91c2)-based analyzer for the
+[Spicy](https://docs.zeek.org/projects/spicy/en/latest/)-based analyzer for the
 Portable Executable (PE) image file format,
 
 - [PE format specification](https://docs.microsoft.com/en-us/windows/win32/debug/pe-format)
