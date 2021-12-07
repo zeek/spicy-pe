@@ -3,8 +3,8 @@
 #empty_field	(empty)
 #unset_field	-
 #path	pe
-#open	XXXX-XX-XX-XX-XX-XX
+#open XXXX-XX-XX-XX-XX-XX
 #fields	ts	id	machine	compile_ts	os	subsystem	is_exe	is_64bit	uses_aslr	uses_dep	uses_code_integrity	uses_seh	has_import_table	has_export_table	has_cert_table	has_debug_data	section_names	section_names	import_table
 #types	time	string	string	time	string	string	bool	bool	bool	bool	bool	bool	bool	bool	bool	bool	vector[string]	vector[string]	vector[string]
-#close	XXXX-XX-XX-XX-XX-XX
+#close XXXX-XX-XX-XX-XX-XX
 XXXXXXXXXX.XXXXXX	XXXXXXXXXXXXXXXXX	I386	XXXXXXXXXX.XXXXXX	Windows 95 or NT 4.0	WINDOWS_CUI	T	F	F	F	F	T	T	F	T	T	.text,.rdata,.data,.rsrc	-	MSVCR71.dll:_XcptFilter,MSVCR71.dll:_cexit,MSVCR71.dll:exit,MSVCR71.dll:__p___initenv,MSVCR71.dll:_amsg_exit,MSVCR71.dll:__getmainargs,MSVCR71.dll:_initterm,MSVCR71.dll:__setusermatherr,MSVCR71.dll:_exit,MSVCR71.dll:__p__commode,MSVCR71.dll:__p__fmode,MSVCR71.dll:__set_app_type,MSVCR71.dll:_except_handler3,MSVCR71.dll:__dllonexit,MSVCR71.dll:_onexit,MSVCR71.dll:_controlfp,MSVCR71.dll:_adjust_fdiv,MSVCR71.dll:_c_exit,MSVCR71.dll:abort,MSVCR71.dll:fprintf,MSVCR71.dll:_iob,MSVCR71.dll:fflush,MSVCR71.dll:fclose,MSVCR71.dll:fread,MSVCR71.dll:_errno,MSVCR71.dll:fopen,MSVCR71.dll:fwrite,MSVCR71.dll:printf,MSVCR71.dll:strtol,MSVCR71.dll:time,MSVCR71.dll:strchr,MSVCR71.dll:strstr,MSVCR71.dll:fgets,MSVCR71.dll:strerror,MSVCR71.dll:strncmp,MSVCR71.dll:isspace,MSVCR71.dll:malloc,MSVCR71.dll:free,MSVCR71.dll:realloc,MSVCR71.dll:wctomb,MSVCR71.dll:wcstombs,MSVCR71.dll:memmove,MSVCR71.dll:memchr,MSVCR71.dll:localeconv,MSVCR71.dll:_strdup,MSVCR71.dll:_fcvt,MSVCR71.dll:_ecvt,MSVCR71.dll:calloc,KERNEL32.dll:GetModuleHandleA
