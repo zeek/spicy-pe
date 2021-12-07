@@ -7,6 +7,4 @@
 
 @load analyzer
 
-export {
-    redef PE::pe_log_section_entropy=T;
-}
+redef PE::pe_log_section_entropy=T;

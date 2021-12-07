@@ -7,6 +7,4 @@
 
 @load analyzer
 
-export {
-    redef PE::pe_log_import_table=T;
-}
+redef PE::pe_log_import_table = T;
