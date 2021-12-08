@@ -22,6 +22,7 @@ const MaxImportDLLs  = 1024;
 const MaxImportSyms  = 16384;
 const MaxExportSyms  = 16384;
 const MaxStringSize  = 512;
+const MaxSectionSize = 5 * 1024 * 1024;
 
 const DOS_HeaderSize       = 64;
 const PE_HeaderSize        = 24;
@@ -70,7 +71,7 @@ public type ImageFile = unit {
                                    $$.numberOfSections <= MaxSections);
     optHeader:      OptionalHeader; # Required for image files
     sectionHeaders: SectionHeader[self.peHeader.numberOfSections];
-    :               bytes &size=self.headerPadSize + self.sectionDataSize
+    sectionData:    bytes &size=self.headerPadSize + self.sectionDataSize
                         if ( self.fileSize <= MaxFileSize );
 
     exportTable:    ExportDirectoryTable(self)
@@ -126,6 +127,56 @@ public type ImageFile = unit {
             }
         }
 
+    on sectionData
+        {
+            local off = DOS_HeaderSize + self.dosStubSize + PE_HeaderSize +
+                    (self.peFileFormat == PE32 ? OptionalHeaderSize32
+                                               : OptionalHeaderSize64) +
+                    self.optHeader.numberOfRvaAndSizes * DataDirectorySize +
+                    self.peHeader.numberOfSections * SectionHeaderSize;
+
+            for ( sh in self.sectionHeaders )
+            {
+              local section_name = sh.name.strip(spicy::Side::Right, b"\x00").decode();
+
+              if ( sh.pointerToRawData != 0 )
+                {
+                # If for some reason, the pointerToRawData points to somewhere before the offset, then
+                # something went wrong, we are going to skip this section and continue with the next one.
+                if ( off > sh.pointerToRawData ) {
+                    continue;
+                }
+                # Get the correct raw bytes of this section by calculating the location
+                # of the bytes relative to the current offset
+                local relativeStart: uint64 = sh.pointerToRawData - off;
+
+                local nBytesToProcess: uint64 = 0;
+
+                # Cut off after 5MiB, since by then you probably have a good idea of whether the section
+                # has high or low entropy. This is done to increase performance. In the case of a large section,
+                # are then calculating the entropy of the first 5MiB of that section.
+                if ( sh.sizeOfRawData > MaxSectionSize ) {
+                    nBytesToProcess = MaxSectionSize;
+                } else {
+                    nBytesToProcess = sh.sizeOfRawData;
+                }
+
+                local sectionBytes: bytes = $$.sub(relativeStart, relativeStart + nBytesToProcess);
+                local sectionCount: map<uint8, uint64> = calculateCounts(sectionBytes);
+                self.sectionCounts[section_name] = sectionCount;
+                self.sectionLengths[section_name] = |sectionBytes|;
+                }
+
+                # If the section maps to 0x00 it does not contain any raw data,
+                # return an empty map in that case.
+              else
+                {
+                self.sectionCounts[section_name] = map<uint8, uint64>();
+                self.sectionLengths[section_name] = 0;
+                }
+            }
+        }
+
     var peStart: iterator<stream>;
     var peFileFormat: uint16;
     var dosStubSize: uint64;
@@ -134,6 +185,20 @@ public type ImageFile = unit {
     var sectionDataSize: uint64;
     var exportDirInfo: DirInfo;
     var importDirInfo: DirInfo;
+
+    # Holds a nested map that represents the counts of the bytes in that section.
+    # The bytes are represented by their ordinal value (e.g. 0x05 as 5 & 0xFF as 255).
+    # For example:
+    #   (".text": ((5: 47), (255: 17)))
+    # means that the section named ".text" holds 47 bytes with ordinal value 5, and 17 bytes with ordinal value 255.
+    # These counts are later on used by a Zeek scripts that calculates the Shannon entropy.
+    var sectionCounts: map<string, map<uint8, uint64>>;
+
+    # A map that holds the total section lenghts.
+    # For example:
+    #   (".text": 17))
+    # means that the section named ".text" has a total length of 17 bytes.
+    var sectionLengths: map<string, uint64>;
 };
 
 type DOS_Header = unit {
@@ -364,6 +429,22 @@ function isNull(e: ImportDirectoryTableEntry): bool
     return e.importLookupTableRVA == 0 && e.timeDateStamp == 0 &&
            e.forwarderChain == 0 && e.dllNameRVA == 0 &&
            e.importAddressTableRVA == 0;
+    }
+
+# Simple function to count the amount of times a byte occurs in a byte stream
+function calculateCounts(bts: bytes): map<uint8, uint64>
+    {
+        local counts: map<uint8, uint64>;
+
+        for ( b in bts ) {
+            if ( b in counts ) {
+                counts[b] = counts[b] + 1;
+            }
+            else {
+                counts[b] = 1;
+            }
+        }
+        return counts;
     }
 
 type ImportLookupTable = unit(f: ImageFile) {
