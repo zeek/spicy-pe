@@ -169,7 +169,7 @@ public type ImageFile = unit {
 
                 # If the section maps to 0x00 it does not contain any raw data,
                 # return an empty map in that case.
-                else
+              else
                 {
                 self.sectionCounts[section_name] = map<uint8, uint64>();
                 self.sectionLengths[section_name] = 0;
