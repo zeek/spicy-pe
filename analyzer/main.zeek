@@ -175,9 +175,14 @@ event pe_import_table(f: fa_file, it: PE::ImportTable) {
 # Called when the file analysis is closed.
 event file_state_remove(f: fa_file)
     {
+	if ( ! f?$pe )
+		{
+		return;
+		}
+
 	# If any of the detailed logging is enabled, delete the default section_names field.
 	# This means that default functionality is not changed.
-	if ( ( pe_log_section_flags || pe_log_section_entropy ) && f?$pe )
+	if ( pe_log_section_flags || pe_log_section_entropy )
 		{
 		f$pe$section_names = vector();
 		for ( section, info in f$pe$section_info_table )
