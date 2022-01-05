@@ -9,7 +9,7 @@ Portable Executable (PE) image file format,
 - [Tour of the Win32 Portable Executable File Format](https://docs.microsoft.com/en-us/previous-versions/ms809762(v=msdn.10))
 - [Wikipedia: Portable Executable](https://en.wikipedia.org/wiki/Portable_Executable)
 
-This analyzer replaces the builtin Zeek DHCP analyzer.
+This analyzer replaces the builtin Zeek PE analyzer.
 
 TODOs
 -----
