@@ -4,6 +4,7 @@ export {
 	option pe_log_section_entropy = F;
 	option pe_log_section_flags = F;
 	option pe_log_import_table = F;
+	option pe_log_export_table = F;
 
 	# Used to store information per section, non-printable.
 	type SectionInfo: record{
@@ -15,6 +16,7 @@ export {
 		section_info_table: table[string] of SectionInfo &default=table();
 		section_names: vector of string &log &optional;
 		import_table: vector of string &log &optional;
+		export_table: vector of string &log &optional;
 		};
 
 	type ExportName: record {
@@ -135,6 +137,22 @@ event pe_section_header(f: fa_file, h: PE::SectionHeader) &priority=1
 		f$pe$section_info_table[h$name] = [];
 	}
 	f$pe$section_info_table[h$name]$flags = flag_string;
+}
+
+event pe_export_table(f: fa_file, it: PE::ExportTable) {
+	if ( ! pe_log_export_table ) {
+		return;
+	}
+    # The vector that we're going to fill.
+    local temp_tbl:  vector of string;
+	
+    # Iterate over the export table names. The exported ordinals are not added 
+	# to the vector currently, but these can be accessed via it$ordinals.
+    for ( i in it$names ) {
+		temp_tbl +=  it$names[i]$name;
+    }
+    # Finally, put it in the actual PE log.
+    f$pe$export_table = temp_tbl;
 }
 
 event pe_import_table(f: fa_file, it: PE::ImportTable) {
