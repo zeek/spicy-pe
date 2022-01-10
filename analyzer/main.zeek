@@ -145,8 +145,8 @@ event pe_export_table(f: fa_file, it: PE::ExportTable) {
 	}
     # The vector that we're going to fill.
     local temp_tbl:  vector of string;
-	
-    # Iterate over the export table names. The exported ordinals are not added 
+
+    # Iterate over the export table names. The exported ordinals are not added
 	# to the vector currently, but these can be accessed via it$ordinals.
     for ( i in it$names ) {
 		temp_tbl +=  it$names[i]$name;
