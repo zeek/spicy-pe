@@ -143,18 +143,16 @@ event pe_export_table(f: fa_file, et: PE::ExportTable) {
     if ( ! pe_log_export_table ) {
         return;
     }
-    # If no functions are exported, skip.
-    if ( ! et?$names ) {
-        return;
-    }
-
     # The vector that we're going to fill.
     local temp_tbl: vector of string;
 
     # Iterate over the export table names. The exported ordinals are not added
     # to the vector currently, but these can be accessed via et$ordinals.
-    for ( i in et$names ) {
-        temp_tbl += et$names[i]$name;
+    # If no function names are parsed, the vector remains empty.
+    if ( et?$names ) {
+        for ( i in et$names ) {
+            temp_tbl += et$names[i]$name;
+        }
     }
     # Finally, put it in the actual PE log.
     f$pe$export_table = temp_tbl;
