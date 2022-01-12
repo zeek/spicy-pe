@@ -5,3 +5,4 @@ We collect them here for convenience only.
 
 PE
 - [ftp-pe.pcap](https://github.com/zeek/zeek/blob/master/testing/btest/Traces/pe/pe.trace) (pruned to a single file transfer)
+- [http-sample-dll.pcap]() Manually created by @fox-ds. A MinGW-compiled DLL on Windows 10 x64 that imports several functions and exports a single function, hosted on a Python HTTP server and downloaded via HTTP.
