@@ -18,8 +18,8 @@ Some fields in the logs are disabled by default, but they can be enabled with th
 
 | Option | Description  |
 |---|---|
-| `PE::pe_log_section_entropy=T`  | Log the Shannon entropy for every section in the `section_names` field. |
-| `PE::pe_log_section_flags=T` | Log whether sections are (**r**)eadable, (**e**)xecutable and/or (**w**)ritable in the `section_names` field. |
+| `PE::pe_log_section_entropy=T`  | Log the Shannon entropy for every section in the `section_info` field. |
+| `PE::pe_log_section_flags=T` | Log whether sections are (**r**)eadable, (**e**)xecutable and/or (**w**)ritable in the `section_info` field. |
 | `PE::pe_log_import_table=T` | Log all the imported function names in the PE, prepended with the source file, to the `import_table` field.  |
 | `PE::pe_log_export_table=T`| Log all the exported function names in the PE to the `export_table` field. |
 

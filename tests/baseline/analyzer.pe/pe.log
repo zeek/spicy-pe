@@ -6,7 +6,7 @@
 #unset_field	-
 #path	pe
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	id	machine	compile_ts	os	subsystem	is_exe	is_64bit	uses_aslr	uses_dep	uses_code_integrity	uses_seh	has_import_table	has_export_table	has_cert_table	has_debug_data	section_names	section_names	import_table	export_table
+#fields	ts	id	machine	compile_ts	os	subsystem	is_exe	is_64bit	uses_aslr	uses_dep	uses_code_integrity	uses_seh	has_import_table	has_export_table	has_cert_table	has_debug_data	section_names	section_info	import_table	export_table
 #types	time	string	string	time	string	string	bool	bool	bool	bool	bool	bool	bool	bool	bool	bool	vector[string]	vector[string]	vector[string]	vector[string]
 #close XXXX-XX-XX-XX-XX-XX
 XXXXXXXXXX.XXXXXX	XXXXXXXXXXXXXXXXX	I386	XXXXXXXXXX.XXXXXX	Windows 95 or NT 4.0	WINDOWS_CUI	T	F	F	F	F	T	T	F	T	T	.text,.rdata,.data,.rsrc	-	-	-
