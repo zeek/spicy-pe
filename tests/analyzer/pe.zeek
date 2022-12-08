@@ -1,4 +1,5 @@
 # @TEST-EXEC: zeek -r ${TRACES}/ftp-pe.pcap %INPUT >out
+# @TEST-EXEC: cat files.log | zeek-cut -C ts fuid analyzers >files2.log && mv files2.log files.log
 # @TEST-EXEC: btest-diff files.log
 # @TEST-EXEC: btest-diff pe.log
 # @TEST-EXEC: btest-diff out

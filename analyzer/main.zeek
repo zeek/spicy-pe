@@ -14,7 +14,7 @@ export {
 
     redef record PE::Info += {
 		section_info_table: table[string] of SectionInfo &default=table();
-		section_names: vector of string &log &optional;
+		section_info: vector of string &log &optional;
 		import_table: vector of string &log &optional;
 		export_table: vector of string &log &optional;
 		};
@@ -201,11 +201,10 @@ event file_state_remove(f: fa_file)
 		return;
 		}
 
-	# If any of the detailed logging is enabled, delete the default section_names field.
-	# This means that default functionality is not changed.
+	# If any of the detailed logging is enabled, initiate the section_info field
 	if ( pe_log_section_flags || pe_log_section_entropy )
 		{
-		f$pe$section_names = vector();
+		f$pe$section_info = vector();
 		for ( section, info in f$pe$section_info_table )
 			{
 			local log_entropy = pe_log_section_entropy ? fmt("%.2f", info$entropy) : "";
@@ -219,7 +218,7 @@ event file_state_remove(f: fa_file)
 					formatted_string += fmt(":%s", log_frag[i]);
 					}
 				}
-			f$pe$section_names += formatted_string;
+			f$pe$section_info += formatted_string;
 			}
 		}
 	}

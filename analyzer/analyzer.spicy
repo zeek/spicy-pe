@@ -62,7 +62,6 @@ type NullTerminatedString = unit {
 public type ImageFile = unit {
     %description = "Parses the Portable Executable (PE) image file format";
     %mime-type = "application/x-dosexec";
-    %random-access;
 
     dosHeader:      DOS_Header;
     dosStub:        bytes &size=self.dosStubSize;
