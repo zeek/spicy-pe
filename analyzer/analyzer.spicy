@@ -59,9 +59,24 @@ type NullTerminatedString = unit {
     s: bytes &until=b"\x00" &max-size=MaxStringSize;
 } &convert=self.s;
 
+# Helper function which checks and stores a given input offset. This throws a
+# ParseError if the same offset was previously checkpointed to the same state.
+function checkpointOffset(it: iterator<stream>, inout state: set<uint64>): iterator<stream> {
+    local offset = it.offset();
+    if (offset in state)
+        throw "Potential infinite pointer loop, offset %d was consumed previously" % offset;
+    add state[offset];
+
+    return it;
+}
+
 public type ImageFile = unit {
     %description = "Parses the Portable Executable (PE) image file format";
     %mime-type = "application/x-dosexec";
+
+    # State to track which offsets were previously seen and consumed. We use
+    # this state to reject potential infinite pointer loops.
+    var consumedOffsets: set<uint64>;
 
     dosHeader:      DOS_Header;
     dosStub:        bytes &size=self.dosStubSize;
@@ -74,10 +89,10 @@ public type ImageFile = unit {
                         if ( self.fileSize <= MaxFileSize );
 
     exportTable:    ExportDirectoryTable(self)
-                        &parse-at=(self.peStart + *self.exportDirInfo.offset)
+                        &parse-at=checkpointOffset(self.peStart + *self.exportDirInfo.offset, self.consumedOffsets)
                         if ( self.exportDirInfo.offset );
     importTable:    ImportDirectoryTable(self)
-                        &parse-at=(self.peStart + *self.importDirInfo.offset)
+                        &parse-at=checkpointOffset(self.peStart + *self.importDirInfo.offset, self.consumedOffsets)
                         if ( self.importDirInfo.offset );
 
     on %init
@@ -324,16 +339,16 @@ type ExportDirectoryTable = unit(f: ImageFile) {
     ordinalTableRVA:   uint32;
 
     dllName:           NullTerminatedString
-                           &parse-at=(f.peStart + *self.dllNameOffset)
+                           &parse-at=checkpointOffset(f.peStart + *self.dllNameOffset, f.consumedOffsets)
                            if ( self.dllNameOffset );
     addressTable:      ExportAddressTable(f, self.addressTableCount)
-                           &parse-at=(f.peStart + *self.addressTableOffset)
+                           &parse-at=checkpointOffset(f.peStart + *self.addressTableOffset, f.consumedOffsets)
                            if ( self.addressTableOffset );
     namePtrTable:      ExportNamePtrTable(f, self.namePtrTableCount)
-                           &parse-at=(f.peStart + *self.namePtrTableOffset)
+                           &parse-at=checkpointOffset(f.peStart + *self.namePtrTableOffset, f.consumedOffsets)
                            if ( self.namePtrTableOffset );
     ordinalTable:      ExportOrdinalTable(f, self.namePtrTableCount)
-                           &parse-at=(f.peStart + *self.ordinalTableOffset)
+                           &parse-at=checkpointOffset(f.peStart + *self.ordinalTableOffset, f.consumedOffsets)
                            if ( self.ordinalTableOffset );
 
     on dllNameRVA { self.dllNameOffset = rvaToOffset(f, $$); }
@@ -363,7 +378,7 @@ type ExportNamePtrTableEntry = unit(f: ImageFile) {
     rva:  uint32;
 
     name: NullTerminatedString
-              &parse-at=(f.peStart + *self.nameOffset)
+              &parse-at=checkpointOffset(f.peStart + *self.nameOffset, f.consumedOffsets)
               if ( self.nameOffset );
 
     on rva { self.nameOffset = rvaToOffset(f, $$); }
@@ -375,7 +390,7 @@ type ExportAddressTableEntry = unit(f: ImageFile) {
     rva:       uint32;
 
     forwarder: NullTerminatedString
-                   &parse-at=(f.peStart + *self.forwarderOffset)
+                   &parse-at=checkpointOffset(f.peStart + *self.forwarderOffset, f.consumedOffsets)
                    if ( self.forwarderOffset );
 
     on rva
@@ -410,10 +425,10 @@ type ImportDirectoryTableEntry = unit(f: ImageFile) {
     importAddressTableRVA: uint32;
 
     dllName:               NullTerminatedString
-                               &parse-at=(f.peStart + *self.dllNameOffset)
+                               &parse-at=checkpointOffset(f.peStart + *self.dllNameOffset, f.consumedOffsets)
                                if ( self.dllNameOffset );
     importLookupTable:     ImportLookupTable(f)
-                               &parse-at=(f.peStart + *self.iltOffset)
+                               &parse-at=checkpointOffset(f.peStart + *self.iltOffset, f.consumedOffsets)
                                if ( self.iltOffset );
 
     on importLookupTableRVA { self.iltOffset = rvaToOffset(f, $$); }
@@ -468,7 +483,7 @@ type ImportLookupTableEntry = unit(f: ImageFile) {
     };
 
     hintName: HintName
-                  &parse-at=(f.peStart + *self.hintNameOffset)
+                  &parse-at=checkpointOffset(f.peStart + *self.hintNameOffset, f.consumedOffsets)
                   if ( self.hintNameOffset );
 
     on entry
