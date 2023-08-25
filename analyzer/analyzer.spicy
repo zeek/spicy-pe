@@ -467,36 +467,52 @@ type ImportLookupTable = unit(f: ImageFile) {
 };
 
 type ImportLookupTableEntry = unit(f: ImageFile) {
+    var full: uint64;
+    var importByName: bool;
+    var ordinal: uint16;
+    var hintNameRVA: uint32;
+
     switch ( f.peFileFormat ) {
-        PE32      -> entry: bitfield(32) {
-            full:         0..31 &convert=cast<uint64>($$);
-            importByName: 31    &convert=cast<bool>(! $$);
-            ordinal:      0..15 &convert=cast<uint16>($$);
-            hintNameRVA:  0..30 &convert=cast<uint32>($$);
-        };
-        PE32_Plus -> entry: bitfield(64) {
-            full:         0..63 &convert=cast<uint64>($$);
-            importByName: 63    &convert=cast<bool>(! $$);
-            ordinal:      0..15 &convert=cast<uint16>($$);
-            hintNameRVA:  0..30 &convert=cast<uint32>($$);
-        };
+        PE32      -> : bitfield(32) {
+            full:         0..31;
+            importByName: 31;
+            ordinal:      0..15;
+            hintNameRVA:  0..30;
+        } {
+            self.full = cast<uint64>($$.full);
+            self.importByName = cast<bool>(! $$.importByName);
+            self.ordinal = cast<uint16>($$.ordinal);
+            self.hintNameRVA = cast<uint32>($$.hintNameRVA);
+        }
+
+        PE32_Plus -> : bitfield(64) {
+            full:         0..63;
+            importByName: 63;
+            ordinal:      0..15;
+            hintNameRVA:  0..30;
+        } {
+            self.full = cast<uint64>($$.full);
+            self.importByName = cast<bool>(! $$.importByName);
+            self.ordinal = cast<uint16>($$.ordinal);
+            self.hintNameRVA = cast<uint32>($$.hintNameRVA);
+        }
     };
+
+    : void
+        {
+        if ( self.importByName )
+            self.hintNameOffset = rvaToOffset(f, self.hintNameRVA);
+        }
 
     hintName: HintName
                   &parse-at=checkpointOffset(f.peStart + *self.hintNameOffset, f.consumedOffsets)
                   if ( self.hintNameOffset );
 
-    on entry
-        {
-        if ( self.entry.importByName )
-            self.hintNameOffset = rvaToOffset(f, self.entry.hintNameRVA);
-        }
-
     var hintNameOffset: Offset;
 };
 
 function isNull(e: ImportLookupTableEntry): bool
-    { return e.entry.full == 0; }
+    { return e.full == 0; }
 
 type HintName = unit {
     hint: uint16;
