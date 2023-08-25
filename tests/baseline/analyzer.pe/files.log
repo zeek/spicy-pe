@@ -6,7 +6,7 @@
 #unset_field	-
 #path	files
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	fuid	analyzers
-#types	time	string	set[string]
+#fields	ts	analyzers
+#types	time	set[string]
 #close XXXX-XX-XX-XX-XX-XX
-XXXXXXXXXX.XXXXXX	XXXXXXXXXXXXXXXXX	SPICY_PE
+XXXXXXXXXX.XXXXXX	SPICY_PE
