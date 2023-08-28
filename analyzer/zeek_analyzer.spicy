@@ -319,16 +319,16 @@ public function makeImportTable(idt: PE::ImportDirectoryTable): ImportTable
                 {
                 local imp: Import;
 
-                if ( i.entry.importByName )
+                if ( i.importByName )
                     {
                     if ( i.hintNameOffset )
-                        imp = (i.entry.hintNameRVA,
+                        imp = (i.hintNameRVA,
                                i.hintName.hint, i.hintName.name, Null);
                     else
-                        imp = (i.entry.hintNameRVA, Null, Null, Null);
+                        imp = (i.hintNameRVA, Null, Null, Null);
                     }
                 else
-                    imp = (Null, Null, Null, i.entry.ordinal);
+                    imp = (Null, Null, Null, i.ordinal);
 
                 imports.push_back(imp);
                 }
