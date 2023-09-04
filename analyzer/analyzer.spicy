@@ -473,7 +473,7 @@ type ImportLookupTableEntry = unit(f: ImageFile) {
     var hintNameRVA: uint32;
 
     switch ( f.peFileFormat ) {
-        PE32      -> : bitfield(32) {
+        PE32      -> f32: bitfield(32) {
             full:         0..31;
             importByName: 31;
             ordinal:      0..15;
@@ -485,7 +485,7 @@ type ImportLookupTableEntry = unit(f: ImageFile) {
             self.hintNameRVA = cast<uint32>($$.hintNameRVA);
         }
 
-        PE32_Plus -> : bitfield(64) {
+        PE32_Plus -> f64: bitfield(64) {
             full:         0..63;
             importByName: 63;
             ordinal:      0..15;
