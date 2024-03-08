@@ -325,7 +325,7 @@ type SectionHeader = unit {
 ###################### Export Directory Table
 ######################
 
-type ExportDirectoryTable = unit(f: ImageFile) {
+type ExportDirectoryTable = unit(inout f: ImageFile) {
     flags:             uint32;
     timeDateStamp:     uint32;
     majorVersion:      uint16;
@@ -362,19 +362,19 @@ type ExportDirectoryTable = unit(f: ImageFile) {
     var ordinalTableOffset: Offset;
 };
 
-type ExportAddressTable = unit(f: ImageFile, entryCount: uint32) {
+type ExportAddressTable = unit(inout f: ImageFile, entryCount: uint32) {
     entries: ExportAddressTableEntry(f)[min(entryCount, MaxExportSyms)];
 };
 
-type ExportNamePtrTable = unit(f: ImageFile, entryCount: uint32) {
+type ExportNamePtrTable = unit(inout f: ImageFile, entryCount: uint32) {
     entries: ExportNamePtrTableEntry(f)[min(entryCount, MaxExportSyms)];
 };
 
-type ExportOrdinalTable = unit(f: ImageFile, entryCount: uint32) {
+type ExportOrdinalTable = unit(inout f: ImageFile, entryCount: uint32) {
     entries: uint16[min(entryCount, MaxExportSyms)];
 };
 
-type ExportNamePtrTableEntry = unit(f: ImageFile) {
+type ExportNamePtrTableEntry = unit(inout f: ImageFile) {
     rva:  uint32;
 
     name: NullTerminatedString
@@ -386,7 +386,7 @@ type ExportNamePtrTableEntry = unit(f: ImageFile) {
     var nameOffset: Offset;
 };
 
-type ExportAddressTableEntry = unit(f: ImageFile) {
+type ExportAddressTableEntry = unit(inout f: ImageFile) {
     rva:       uint32;
 
     forwarder: NullTerminatedString
@@ -412,12 +412,12 @@ type ExportAddressTableEntry = unit(f: ImageFile) {
 ###################### Import Directory Table
 ######################
 
-type ImportDirectoryTable = unit(f: ImageFile) {
+type ImportDirectoryTable = unit(inout f: ImageFile) {
     entries: ImportDirectoryTableEntry(f)[]
         &while=(! isNull($$) && |self.entries| < MaxImportDLLs);
 };
 
-type ImportDirectoryTableEntry = unit(f: ImageFile) {
+type ImportDirectoryTableEntry = unit(inout f: ImageFile) {
     importLookupTableRVA:  uint32;
     timeDateStamp:         uint32;
     forwarderChain:        uint32;
@@ -461,12 +461,12 @@ function calculateCounts(bts: bytes): map<uint8, uint64>
         return counts;
     }
 
-type ImportLookupTable = unit(f: ImageFile) {
+type ImportLookupTable = unit(inout f: ImageFile) {
     entries: ImportLookupTableEntry(f)[]
         &while=(! isNull($$) && |self.entries| < MaxImportSyms);
 };
 
-type ImportLookupTableEntry = unit(f: ImageFile) {
+type ImportLookupTableEntry = unit(inout f: ImageFile) {
     var full: uint64;
     var importByName: bool;
     var ordinal: uint16;
