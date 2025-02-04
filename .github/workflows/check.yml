@@ -20,7 +20,7 @@ jobs:
     container: zeek/${{ matrix.version }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Prepare
         run: |
           apt-get update
