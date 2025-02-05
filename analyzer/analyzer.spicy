@@ -60,13 +60,17 @@ type NullTerminatedString = unit {
 } &convert=self.s;
 
 # Helper function which checks and stores a given input offset. This throws a
-# ParseError if the same offset was previously checkpointed to the same state.
-function checkpointOffset(it: iterator<stream>, inout state: set<uint64>): iterator<stream> {
+# ParseError if the same offset was previously checkpointed to the same state,
+# or if we track more than `max_states` different offsets.
+function checkpointOffset(it: iterator<stream>, inout state: set<uint64>, max_states: uint64 = 256): iterator<stream> {
+    if (|state| >= max_states)
+        throw "Cannot track more than %d offsets, aborting" % max_states;
     local offset = it.offset();
+
     if (offset in state)
         throw "Potential infinite pointer loop, offset %d was consumed previously" % offset;
-    add state[offset];
 
+    add state[offset];
     return it;
 }
 
