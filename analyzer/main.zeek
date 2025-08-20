@@ -8,8 +8,8 @@ export {
 
 	# Used to store information per section, non-printable.
 	type SectionInfo: record{
-		entropy: double &optional &default=0.0;
-		flags: string &optional &default="";
+		entropy: double &default=0.0;
+		flags: string &default="";
 	};
 
     redef record PE::Info += {
